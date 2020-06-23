@@ -105,15 +105,16 @@ async function runSocketServer() {
       callback(mediasoupRouter.rtpCapabilities);
     });
 
-    socket.on('createProducerTransport', async (data, callback) => 
-      try {
+    socket.on('createProducerTransport', async (data, callback) => {
         scribbles.log('createProducerTransport',data);
-        const { transport, params } = await createWebRtcTransport();
-        producerTransport = transport;
-        callback(params);
-      } catch (err) {
-        scribbles.error(err);
-        callback({ error: err.message });
+        try {
+          const { transport, params } = await createWebRtcTransport();
+          producerTransport = transport;
+          callback(params);
+        } catch (err) {
+          scribbles.error(err);
+          callback({ error: err.message });
+        }
       }
     });
 
