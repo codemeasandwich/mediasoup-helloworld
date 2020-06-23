@@ -100,13 +100,13 @@ async function runSocketServer() {
     });
 
     socket.on('getRouterRtpCapabilities', (data, callback) => {
-      scribbles.log('getRouterRtpCapabilities',data);
+      scribbles.log('getRouterRtpCapabilities');
       scribbles.log('mediasoupRouter.rtpCapabilities',mediasoupRouter.rtpCapabilities);
       callback(mediasoupRouter.rtpCapabilities);
     });
 
     socket.on('createProducerTransport', async (data, callback) => {
-        scribbles.log('createProducerTransport',data);
+        scribbles.log('createProducerTransport');
         try {
           const { transport, params } = await createWebRtcTransport();
           producerTransport = transport;
@@ -119,7 +119,7 @@ async function runSocketServer() {
     });
 
     socket.on('createConsumerTransport', async (data, callback) => {
-      scribbles.log('createConsumerTransport',data);
+      scribbles.log('createConsumerTransport');
       try {
         const { transport, params } = await createWebRtcTransport();
         consumerTransport = transport;
@@ -131,19 +131,19 @@ async function runSocketServer() {
     });
 
     socket.on('connectProducerTransport', async (data, callback) => {
-      scribbles.log('connectProducerTransport',data);
+      scribbles.log('connectProducerTransport');
       await producerTransport.connect({ dtlsParameters: data.dtlsParameters });
       callback();
     });
 
     socket.on('connectConsumerTransport', async (data, callback) => {
-      scribbles.log('connectConsumerTransport',data);
+      scribbles.log('connectConsumerTransport');
       await consumerTransport.connect({ dtlsParameters: data.dtlsParameters });
       callback();
     });
 
     socket.on('produce', async (data, callback) => {
-      scribbles.log('produce',data);
+      scribbles.log('produce');
       const {kind, rtpParameters} = data;
       producer = await producerTransport.produce({ kind, rtpParameters });
       callback({ id: producer.id });
@@ -153,12 +153,12 @@ async function runSocketServer() {
     });
 
     socket.on('consume', async (data, callback) => {
-      scribbles.log('consume',data);
+      scribbles.log('consume');
       callback(await createConsumer(producer, data.rtpCapabilities));
     });
 
     socket.on('resume', async (data, callback) => {
-      scribbles.log('resume',data);
+      scribbles.log('resume');
       await consumer.resume();
       callback();
     });
