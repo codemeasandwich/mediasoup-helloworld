@@ -84,7 +84,7 @@ async function runSocketServer() {
   });
 
   socketServer.on('connection', (socket) => {
-    scribbles.log('client connected');
+    scribbles.log('client connected', producer);
 
     // inform the client about existence of producer
     if (producer) {
@@ -166,12 +166,14 @@ async function runSocketServer() {
 }
 
 async function runMediasoupWorker() {
-  worker = await mediasoup.createWorker({
+  const createWorkerSettings = {
     logLevel: config.mediasoup.worker.logLevel,
     logTags: config.mediasoup.worker.logTags,
     rtcMinPort: config.mediasoup.worker.rtcMinPort,
     rtcMaxPort: config.mediasoup.worker.rtcMaxPort,
-  });
+  }
+  scribbles.log(createWorkerSettings)
+  worker = await mediasoup.createWorker(createWorkerSettings);
 
   worker.on('died', () => {
     scribbles.error('mediasoup worker died, exiting in 2 seconds... [pid:%d]', worker.pid);
@@ -180,6 +182,7 @@ async function runMediasoupWorker() {
 
   const mediaCodecs = config.mediasoup.router.mediaCodecs;
   mediasoupRouter = await worker.createRouter({ mediaCodecs });
+  scribbles.log("Created Router", mediaCodecs,mediasoupRouter)
 }
 
 async function createWebRtcTransport() {
