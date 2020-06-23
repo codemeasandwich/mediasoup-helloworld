@@ -115,7 +115,7 @@ async function runSocketServer() {
           scribbles.error(err);
           callback({ error: err.message });
         }
-      }
+      
     });
 
     socket.on('createConsumerTransport', async (data, callback) => {
