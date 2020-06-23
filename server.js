@@ -4,7 +4,8 @@ const https = require('https');
 const express = require('express');
 const socketIO = require('socket.io');
 const config = require('./config');
-
+const scribbles = require('scribbles');
+ 
 // Global variables
 let worker;
 let webServer;
@@ -23,7 +24,7 @@ let mediasoupRouter;
     await runSocketServer();
     await runMediasoupWorker();
   } catch (err) {
-    console.error(err);
+    scribbles.error(err);
   }
 })();
 
@@ -34,7 +35,7 @@ async function runExpressApp() {
 
   expressApp.use((error, req, res, next) => {
     if (error) {
-      console.warn('Express app error,', error.message);
+      scribbles.warn('Express app error,', error.message);
 
       error.status = error.status || (error.name === 'TypeError' ? 400 : 500);
 
@@ -49,16 +50,18 @@ async function runExpressApp() {
 async function runWebServer() {
   const { sslKey, sslCrt } = config;
   if (!fs.existsSync(sslKey) || !fs.existsSync(sslCrt)) {
-    console.error('SSL files are not found. check your config.js file');
+    scribbles.error('SSL files are not found. check your config.js file');
     process.exit(0);
   }
+  scribbles.info('SSL files OK');
+  
   const tls = {
     cert: fs.readFileSync(sslCrt),
     key: fs.readFileSync(sslKey),
   };
   webServer = https.createServer(tls, expressApp);
   webServer.on('error', (err) => {
-    console.error('starting web server failed:', err.message);
+    scribbles.error('starting web server failed:', err.message);
   });
 
   await new Promise((resolve) => {
@@ -66,8 +69,8 @@ async function runWebServer() {
     webServer.listen(listenPort, listenIp, () => {
       const listenIps = config.mediasoup.webRtcTransport.listenIps[0];
       const ip = listenIps.announcedIp || listenIps.ip;
-      console.log('server is running');
-      console.log(`open https://${ip}:${listenPort} in your web browser`);
+      scribbles.log('server is running');
+      scribbles.log(`open https://${ip}:${listenPort} in your web browser`);
       resolve();
     });
   });
@@ -81,7 +84,7 @@ async function runSocketServer() {
   });
 
   socketServer.on('connection', (socket) => {
-    console.log('client connected');
+    scribbles.log('client connected');
 
     // inform the client about existence of producer
     if (producer) {
@@ -89,50 +92,57 @@ async function runSocketServer() {
     }
 
     socket.on('disconnect', () => {
-      console.log('client disconnected');
+      scribbles.log('client disconnected');
     });
 
     socket.on('connect_error', (err) => {
-      console.error('client connection error', err);
+      scribbles.error('client connection error', err);
     });
 
     socket.on('getRouterRtpCapabilities', (data, callback) => {
+      scribbles.log('getRouterRtpCapabilities',data);
+      scribbles.log('mediasoupRouter.rtpCapabilities',mediasoupRouter.rtpCapabilities);
       callback(mediasoupRouter.rtpCapabilities);
     });
 
-    socket.on('createProducerTransport', async (data, callback) => {
+    socket.on('createProducerTransport', async (data, callback) => 
+      scribbles.log('createProducerTransport',data);
       try {
         const { transport, params } = await createWebRtcTransport();
         producerTransport = transport;
         callback(params);
       } catch (err) {
-        console.error(err);
+        scribbles.error(err);
         callback({ error: err.message });
       }
     });
 
     socket.on('createConsumerTransport', async (data, callback) => {
+      scribbles.log('createConsumerTransport',data);
       try {
         const { transport, params } = await createWebRtcTransport();
         consumerTransport = transport;
         callback(params);
       } catch (err) {
-        console.error(err);
+        scribbles.error(err);
         callback({ error: err.message });
       }
     });
 
     socket.on('connectProducerTransport', async (data, callback) => {
+      scribbles.log('connectProducerTransport',data);
       await producerTransport.connect({ dtlsParameters: data.dtlsParameters });
       callback();
     });
 
     socket.on('connectConsumerTransport', async (data, callback) => {
+      scribbles.log('connectConsumerTransport',data);
       await consumerTransport.connect({ dtlsParameters: data.dtlsParameters });
       callback();
     });
 
     socket.on('produce', async (data, callback) => {
+      scribbles.log('produce',data);
       const {kind, rtpParameters} = data;
       producer = await producerTransport.produce({ kind, rtpParameters });
       callback({ id: producer.id });
@@ -142,10 +152,12 @@ async function runSocketServer() {
     });
 
     socket.on('consume', async (data, callback) => {
+      scribbles.log('consume',data);
       callback(await createConsumer(producer, data.rtpCapabilities));
     });
 
     socket.on('resume', async (data, callback) => {
+      scribbles.log('resume',data);
       await consumer.resume();
       callback();
     });
@@ -161,7 +173,7 @@ async function runMediasoupWorker() {
   });
 
   worker.on('died', () => {
-    console.error('mediasoup worker died, exiting in 2 seconds... [pid:%d]', worker.pid);
+    scribbles.error('mediasoup worker died, exiting in 2 seconds... [pid:%d]', worker.pid);
     setTimeout(() => process.exit(1), 2000);
   });
 
@@ -170,6 +182,7 @@ async function runMediasoupWorker() {
 }
 
 async function createWebRtcTransport() {
+      scribbles.log(config.mediasoup.webRtcTransport);
   const {
     maxIncomingBitrate,
     initialAvailableOutgoingBitrate
@@ -206,7 +219,7 @@ async function createConsumer(producer, rtpCapabilities) {
       rtpCapabilities,
     })
   ) {
-    console.error('can not consume');
+    scribbles.error('can not consume');
     return;
   }
   try {
@@ -216,7 +229,7 @@ async function createConsumer(producer, rtpCapabilities) {
       paused: producer.kind === 'video',
     });
   } catch (error) {
-    console.error('consume failed', error);
+    scribbles.error('consume failed', error);
     return;
   }
 

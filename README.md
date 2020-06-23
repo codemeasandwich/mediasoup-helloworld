@@ -1,4 +1,4 @@
-# Mediasoup Sample App
+# Mediasoup Helloworld
 
 A minimal Client/Server app based on Mediasoup and Socket.io
 
@@ -14,11 +14,6 @@ A minimal Client/Server app based on Mediasoup and Socket.io
 
 The server app runs on any supported platform by Mediasoup. The client app runs on a single browser tab.
 ```
-# create and modify the configuration
-# make sure you set the proper IP for mediasoup.webRtcTransport.listenIps
-cp config.example.js config.js
-nano config.js
-
 # install dependencies and build mediasoup
 npm install
 
@@ -26,7 +21,7 @@ npm install
 npm start
 ```
 
-# Troubleshooting
+### Troubleshooting
 ```
 sudo npm install browserify -g
 sudo npm cache clean -f
