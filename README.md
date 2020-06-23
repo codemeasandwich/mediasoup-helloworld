@@ -25,3 +25,11 @@ npm install
 # create the client bundle and start the server app
 npm start
 ```
+
+# Troubleshooting
+```
+sudo npm install browserify -g
+sudo npm cache clean -f
+sudo npm install -g n
+sudo n stable
+```
