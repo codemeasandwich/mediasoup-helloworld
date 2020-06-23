@@ -106,8 +106,8 @@ async function runSocketServer() {
     });
 
     socket.on('createProducerTransport', async (data, callback) => 
-      scribbles.log('createProducerTransport',data);
       try {
+        scribbles.log('createProducerTransport',data);
         const { transport, params } = await createWebRtcTransport();
         producerTransport = transport;
         callback(params);
