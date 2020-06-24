@@ -149,6 +149,7 @@ async function publish(e) {
       break;
 
       case 'connected':
+        document.querySelector('#local_video').muted = true;
         document.querySelector('#local_video').srcObject = stream;
         $txtPublish.innerHTML = 'published';
         $fsPublish.disabled = true;
