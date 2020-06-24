@@ -197,7 +197,14 @@ async function getUserMedia(transport, isWebcam) {
   let stream;
   try {
     stream = isWebcam ?
-      await navigator.mediaDevices.getUserMedia({ video: true, audio: true }) :   // Share Webcam
+      await navigator.mediaDevices.getUserMedia({ video: {
+    width: { min: 1024, ideal: 1280, max: 1920 },
+    height: { min: 576, ideal: 720, max: 1080 }
+  }, audio: {
+      sampleSize: 16,
+      channelCount: 2,
+      echoCancellation: true
+    } }) : // Share Webcam
       await navigator.mediaDevices.getDisplayMedia({ video: true }); // Share Screen
   } catch (err) {
     console.error('getUserMedia() failed:', err.message);
