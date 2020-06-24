@@ -5,7 +5,7 @@ const express = require('express');
 const socketIO = require('socket.io');
 const config = require('./config');
 const scribbles = require('scribbles');
- 
+
 // Global variables
 let worker;
 let webServer;
@@ -172,7 +172,7 @@ async function runMediasoupWorker() {
     rtcMinPort: config.mediasoup.worker.rtcMinPort,
     rtcMaxPort: config.mediasoup.worker.rtcMaxPort,
   }
-  scribbles.log(createWorkerSettings)
+  scribbles.log("Creates a new worker with the given settings.",createWorkerSettings) // 1
   worker = await mediasoup.createWorker(createWorkerSettings);
 
   worker.on('died', () => {
@@ -182,7 +182,7 @@ async function runMediasoupWorker() {
 
   const mediaCodecs = config.mediasoup.router.mediaCodecs;
   mediasoupRouter = await worker.createRouter({ mediaCodecs });
-  scribbles.log("Created Router", mediaCodecs,mediasoupRouter)
+  scribbles.log("Creates a new router from the WORKER", mediaCodecs,mediasoupRouter) // 2
 }
 
 async function createWebRtcTransport() {

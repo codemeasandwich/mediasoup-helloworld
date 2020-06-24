@@ -18,5 +18,8 @@
   },
   "devDependencies": {
     "requirejs": "^2.3.6"
+  },
+  "scribbles":{
+    "format":"#{gitHash} {time} <{logLevel}> {fileName}:{lineNumber} {message} {value} {stackTrace}"
   }
 }
