@@ -203,7 +203,9 @@ async function getUserMedia(transport, isWebcam) {
   }, audio: {
       sampleSize: 16,
       channelCount: 2,
-      echoCancellation: true
+      echoCancellation: true,
+      autoGainControl: true,
+      noiseSuppression: true
     } }) : // Share Webcam
       await navigator.mediaDevices.getDisplayMedia({ video: true }); // Share Screen
   } catch (err) {
