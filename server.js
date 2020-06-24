@@ -6,6 +6,10 @@ const socketIO = require('socket.io');
 const config = require('./config');
 const scribbles = require('scribbles');
 
+config.mediasoup.webRtcTransport;
+
+                                      scribbles.log("CONFIG:",config)
+
 // Global variables
 let worker;
 let webServer;
@@ -19,9 +23,13 @@ let mediasoupRouter;
 
 (async () => {
   try {
+    scribbles.log("KICK: runExpressApp")
     await runExpressApp();
+    scribbles.log("KICK: runWebServer")
     await runWebServer();
+    scribbles.log("KICK: runSocketServer")
     await runSocketServer();
+    scribbles.log("KICK: runMediasoupWorker")
     await runMediasoupWorker();
   } catch (err) {
                                                                                     scribbles.error(err);
@@ -190,7 +198,7 @@ async function createWebRtcTransport() {
     initialAvailableOutgoingBitrate
   } = config.mediasoup.webRtcTransport;
 
-                                      scribbles.log("Creates a new WebRTC transport.",{
+                                      scribbles.log("Creates a new WebRTC transport. config:",{
                                         maxIncomingBitrate,
                                         initialAvailableOutgoingBitrate
                                       });
@@ -201,6 +209,7 @@ async function createWebRtcTransport() {
     preferUdp: true,
     initialAvailableOutgoingBitrate,
   });
+                                      scribbles.log("Created WebRTC transport",transport);
   if (maxIncomingBitrate) {
     try {
       await transport.setMaxIncomingBitrate(maxIncomingBitrate);
