@@ -107,8 +107,8 @@ async function runSocketServer() {
     });
 
     socket.on('getRouterRtpCapabilities', (data, callback) => {
-                                                                                scribbles.log('RTP capabilities',data)
-                                                                                scribbles.log('Send back',mediasoupRouter.rtpCapabilities);
+                                                                                scribbles.log('Server RTP supports - Send back:',
+                                                                                              mediasoupRouter.rtpCapabilities);
       callback(mediasoupRouter.rtpCapabilities);
     });
 
@@ -179,7 +179,7 @@ async function runMediasoupWorker() {
     rtcMinPort: config.mediasoup.worker.rtcMinPort,
     rtcMaxPort: config.mediasoup.worker.rtcMaxPort,
   }
-                                                                      scribbles.log("Creates a new worker with the given settings.",createWorkerSettings) // 1
+                                                                      scribbles.log("Creates a new WORKer with the given settings.",createWorkerSettings) // 1
   worker = await mediasoup.createWorker(createWorkerSettings);
 
   worker.on('died', () => {
@@ -189,7 +189,7 @@ async function runMediasoupWorker() {
 
   const mediaCodecs = config.mediasoup.router.mediaCodecs;
   mediasoupRouter = await worker.createRouter({ mediaCodecs });
-                                                                        scribbles.log("Creates a new router from the WORKER", mediaCodecs,mediasoupRouter)
+                                                                      scribbles.log("Creates a new ROUTER from the WORKER", mediaCodecs,mediasoupRouter)
 } // END runMediasoupWorker
 
 async function createWebRtcTransport() {
@@ -198,7 +198,7 @@ async function createWebRtcTransport() {
     initialAvailableOutgoingBitrate
   } = config.mediasoup.webRtcTransport;
 
-                                                                                scribbles.log("Creates a new WebRTC transport. config:",{
+                                                                                scribbles.log("Creates a new TRANSPORT from ROUTER - config:",{
                                                                                   maxIncomingBitrate,
                                                                                   initialAvailableOutgoingBitrate
                                                                                 });
@@ -209,7 +209,7 @@ async function createWebRtcTransport() {
     preferUdp: true,
     initialAvailableOutgoingBitrate,
   });
-                                                                                scribbles.log("Created WebRTC transport",transport);
+                                                                                scribbles.log("Created TRANSPORT ✔",transport);
   if (maxIncomingBitrate) {
     try {
       await transport.setMaxIncomingBitrate(maxIncomingBitrate);

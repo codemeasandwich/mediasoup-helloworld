@@ -104,7 +104,7 @@ async function publish(e) {
     console.error(data.error);
     return;
   }
-
+  console.log("Creates a Transport to >> SEND << media. Using createWebRtcTransport(...) read from createProducerTransport ")
   const transport = device.createSendTransport(data);
   console.log('createSendTransport',transport)
   transport.on('connect', async ({ dtlsParameters }, callback, errback) => {
@@ -118,7 +118,7 @@ async function publish(e) {
   transport.on('produce', async ({ kind, rtpParameters }, callback, errback) => {
     
     try {
-  console.log('OUT socket.request("produce"',{
+  console.log(' -->> socket.request("produce"',{
         transportId: transport.id,
         kind,
         rtpParameters,
@@ -128,7 +128,7 @@ async function publish(e) {
         kind,
         rtpParameters,
       });
-  console.log(' IN socket.request("produce"',id)
+  console.log(' <<-- socket.request("produce"',id)
       callback({ id });
     } catch (err) {
       errback(err);
@@ -167,7 +167,9 @@ async function publish(e) {
   let stream;
   try {
     stream = await getUserMedia(transport, isWebcam);
-    const track = stream.getVideoTracks()[0];
+    const tracks = stream.getVideoTracks();
+    console.log('getUserMedia',stream,tracks);
+    const track = tracks[0];
     const params = { track };
     if ($chkSimulcast.checked) {
       params.encodings = [
@@ -211,7 +213,7 @@ async function subscribe() {
     console.error(data.error);
     return;
   }
-
+  console.log("Creates a Transport to >> RECEIVE << media. Using createWebRtcTransport(...) read from createProducerTransport ")
   const transport = device.createRecvTransport(data);
   transport.on('connect', ({ dtlsParameters }, callback, errback) => {
     socket.request('connectConsumerTransport', {
