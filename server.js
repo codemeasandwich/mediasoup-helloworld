@@ -24,7 +24,7 @@ let mediasoupRouter;
     await runSocketServer();
     await runMediasoupWorker();
   } catch (err) {
-    scribbles.error(err);
+                                                                                    scribbles.error(err);
   }
 })();
 
@@ -35,7 +35,7 @@ async function runExpressApp() {
 
   expressApp.use((error, req, res, next) => {
     if (error) {
-      scribbles.warn('Express app error,', error.message);
+                                                                                    scribbles.warn('Express app error,', error.message);
 
       error.status = error.status || (error.name === 'TypeError' ? 400 : 500);
 
@@ -45,15 +45,15 @@ async function runExpressApp() {
       next();
     }
   });
-}
+} // END runExpressApp
 
 async function runWebServer() {
   const { sslKey, sslCrt } = config;
   if (!fs.existsSync(sslKey) || !fs.existsSync(sslCrt)) {
-    scribbles.error('SSL files are not found. check your config.js file');
+                                                                                  scribbles.error('SSL files are not found. check your config.js file');
     process.exit(0);
   }
-  scribbles.info('SSL files OK');
+                                                                                scribbles.info('SSL files OK');
   
   const tls = {
     cert: fs.readFileSync(sslCrt),
@@ -61,7 +61,7 @@ async function runWebServer() {
   };
   webServer = https.createServer(tls, expressApp);
   webServer.on('error', (err) => {
-    scribbles.error('starting web server failed:', err.message);
+                                                                                  scribbles.error('starting web server failed:', err.message);
   });
 
   await new Promise((resolve) => {
@@ -69,12 +69,12 @@ async function runWebServer() {
     webServer.listen(listenPort, listenIp, () => {
       const listenIps = config.mediasoup.webRtcTransport.listenIps[0];
       const ip = listenIps.announcedIp || listenIps.ip;
-      scribbles.log('server is running');
-      scribbles.log(`open https://${ip}:${listenPort} in your web browser`);
+                                                                                  scribbles.log('server is running');
+                                                                                  scribbles.log(`open https://${ip}:${listenPort} in your web browser`);
       resolve();
     });
-  });
-}
+  }); // END new Promise
+} // END runWebServer
 
 async function runSocketServer() {
   socketServer = socketIO(webServer, {
@@ -83,8 +83,8 @@ async function runSocketServer() {
     log: false,
   });
 
-  socketServer.on('connection', (socket) => {
-    scribbles.log('client connected', producer);
+  socketServer.on('connection', (socket) => { // Fired when you hit the connection Button
+                                                                                    scribbles.log('client connected', producer); // A
 
     // inform the client about existence of producer
     if (producer) {
@@ -92,46 +92,45 @@ async function runSocketServer() {
     }
 
     socket.on('disconnect', () => {
-      scribbles.log('client disconnected');
+                                                                                  scribbles.log('client disconnected');
     });
 
     socket.on('connect_error', (err) => {
-      scribbles.error('client connection error', err);
+                                                                                scribbles.error('client connection error', err);
     });
 
     socket.on('getRouterRtpCapabilities', (data, callback) => {
-      scribbles.log('getRouterRtpCapabilities');
-      scribbles.log('mediasoupRouter.rtpCapabilities',mediasoupRouter.rtpCapabilities);
+                                                    scribbles.log('RTP capabilities',mediasoupRouter.rtpCapabilities);
       callback(mediasoupRouter.rtpCapabilities);
     });
 
     socket.on('createProducerTransport', async (data, callback) => {
-        scribbles.log('createProducerTransport');
+                                                          scribbles.log('createProducerTransport');
         try {
           const { transport, params } = await createWebRtcTransport();
           producerTransport = transport;
           callback(params);
         } catch (err) {
-          scribbles.error(err);
+                                              scribbles.error(err);
           callback({ error: err.message });
         }
       
     });
 
     socket.on('createConsumerTransport', async (data, callback) => {
-      scribbles.log('createConsumerTransport');
+                                                                     scribbles.log('createConsumerTransport');
       try {
         const { transport, params } = await createWebRtcTransport();
         consumerTransport = transport;
         callback(params);
       } catch (err) {
-        scribbles.error(err);
+                                                scribbles.error(err);
         callback({ error: err.message });
       }
     });
 
     socket.on('connectProducerTransport', async (data, callback) => {
-      scribbles.log('connectProducerTransport');
+                                                                            scribbles.log('connectProducerTransport');
       await producerTransport.connect({ dtlsParameters: data.dtlsParameters });
       callback();
     });
@@ -143,7 +142,7 @@ async function runSocketServer() {
     });
 
     socket.on('produce', async (data, callback) => {
-      scribbles.log('produce');
+                                                     scribbles.log('produce',data);
       const {kind, rtpParameters} = data;
       producer = await producerTransport.produce({ kind, rtpParameters });
       callback({ id: producer.id });
@@ -153,17 +152,17 @@ async function runSocketServer() {
     });
 
     socket.on('consume', async (data, callback) => {
-      scribbles.log('consume');
+                                                      scribbles.log('consume');
       callback(await createConsumer(producer, data.rtpCapabilities));
     });
 
     socket.on('resume', async (data, callback) => {
-      scribbles.log('resume');
+                                                      scribbles.log('resume');
       await consumer.resume();
       callback();
     });
   });
-}
+} // END runSocketServer
 
 async function runMediasoupWorker() {
   const createWorkerSettings = {
@@ -172,26 +171,29 @@ async function runMediasoupWorker() {
     rtcMinPort: config.mediasoup.worker.rtcMinPort,
     rtcMaxPort: config.mediasoup.worker.rtcMaxPort,
   }
-  scribbles.log("Creates a new worker with the given settings.",createWorkerSettings) // 1
+                                    scribbles.log("Creates a new worker with the given settings.",createWorkerSettings) // 1
   worker = await mediasoup.createWorker(createWorkerSettings);
 
   worker.on('died', () => {
-    scribbles.error('mediasoup worker died, exiting in 2 seconds... [pid:%d]', worker.pid);
+                                     scribbles.error('mediasoup worker died, exiting in 2 seconds... [pid:%d]', worker.pid);
     setTimeout(() => process.exit(1), 2000);
   });
 
   const mediaCodecs = config.mediasoup.router.mediaCodecs;
   mediasoupRouter = await worker.createRouter({ mediaCodecs });
-  scribbles.log("Creates a new router from the WORKER", mediaCodecs,mediasoupRouter) // 2
-}
+                                    scribbles.log("Creates a new router from the WORKER", mediaCodecs,mediasoupRouter)
+} // END runMediasoupWorker
 
 async function createWebRtcTransport() {
-      scribbles.log(config.mediasoup.webRtcTransport);
   const {
     maxIncomingBitrate,
     initialAvailableOutgoingBitrate
   } = config.mediasoup.webRtcTransport;
 
+                                      scribbles.log("Creates a new WebRTC transport.",{
+                                        maxIncomingBitrate,
+                                        initialAvailableOutgoingBitrate
+                                      });
   const transport = await mediasoupRouter.createWebRtcTransport({
     listenIps: config.mediasoup.webRtcTransport.listenIps,
     enableUdp: true,
@@ -214,7 +216,7 @@ async function createWebRtcTransport() {
       dtlsParameters: transport.dtlsParameters
     },
   };
-}
+} // END createWebRtcTransport
 
 async function createConsumer(producer, rtpCapabilities) {
   if (!mediasoupRouter.canConsume(
@@ -223,7 +225,7 @@ async function createConsumer(producer, rtpCapabilities) {
       rtpCapabilities,
     })
   ) {
-    scribbles.error('can not consume');
+                                 scribbles.error('can not consume');
     return;
   }
   try {
@@ -232,10 +234,15 @@ async function createConsumer(producer, rtpCapabilities) {
       rtpCapabilities,
       paused: producer.kind === 'video',
     });
+                                  scribbles.log("Receive! an VIDEO track from the router.",{
+                                    producerId: producer.id,
+                                    rtpCapabilities,
+                                    paused: producer.kind === 'video',
+                                  },consumer)
   } catch (error) {
-    scribbles.error('consume failed', error);
+                                  scribbles.error('consume failed', error);
     return;
-  }
+  } // END catch
 
   if (consumer.type === 'simulcast') {
     await consumer.setPreferredLayers({ spatialLayer: 2, temporalLayer: 2 });
@@ -249,4 +256,4 @@ async function createConsumer(producer, rtpCapabilities) {
     type: consumer.type,
     producerPaused: consumer.producerPaused
   };
-}
+} // END createConsumer

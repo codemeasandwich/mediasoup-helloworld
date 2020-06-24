@@ -53,6 +53,7 @@ async function connect() {
     $fsSubscribe.disabled = false;
 
     const data = await socket.request('getRouterRtpCapabilities');
+    console.log('Router Rtp Capabilities',data)
     await loadDevice(data);
   });
 
@@ -117,7 +118,7 @@ async function publish(e) {
   transport.on('produce', async ({ kind, rtpParameters }, callback, errback) => {
     
     try {
-  console.log('transport.on("produce"',{
+  console.log('OUT socket.request("produce"',{
         transportId: transport.id,
         kind,
         rtpParameters,
@@ -127,7 +128,7 @@ async function publish(e) {
         kind,
         rtpParameters,
       });
-  console.log('socket.request("produce"',id)
+  console.log(' IN socket.request("produce"',id)
       callback({ id });
     } catch (err) {
       errback(err);
