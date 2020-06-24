@@ -47,6 +47,7 @@ async function connect() {
   socket.request = socketPromise(socket);
 
   socket.on('connect', async () => {
+    console.log('connect')
     $txtConnection.innerHTML = 'Connected';
     $fsPublish.disabled = false;
     $fsSubscribe.disabled = false;
@@ -56,6 +57,7 @@ async function connect() {
   });
 
   socket.on('disconnect', () => {
+    console.log('disconnect')
     $txtConnection.innerHTML = 'Disconnected';
     $btnConnect.disabled = false;
     $fsPublish.disabled = true;
@@ -69,6 +71,7 @@ async function connect() {
   });
 
   socket.on('newProducer', () => {
+    console.log('newProducer')
     $fsSubscribe.disabled = false;
   });
 }
@@ -92,25 +95,39 @@ async function publish(e) {
     forceTcp: false,
     rtpCapabilities: device.rtpCapabilities,
   });
+  console.log('createProducerTransport',{
+    forceTcp: false,
+    rtpCapabilities: device.rtpCapabilities,
+  },data)
   if (data.error) {
     console.error(data.error);
     return;
   }
 
   const transport = device.createSendTransport(data);
+  console.log('createSendTransport',transport)
   transport.on('connect', async ({ dtlsParameters }, callback, errback) => {
+    
+  console.log('transport.on("connect" / connectProducerTransport',dtlsParameters)
     socket.request('connectProducerTransport', { dtlsParameters })
       .then(callback)
       .catch(errback);
   });
 
   transport.on('produce', async ({ kind, rtpParameters }, callback, errback) => {
+    
     try {
+  console.log('transport.on("produce"',{
+        transportId: transport.id,
+        kind,
+        rtpParameters,
+      })
       const { id } = await socket.request('produce', {
         transportId: transport.id,
         kind,
         rtpParameters,
       });
+  console.log('socket.request("produce"',id)
       callback({ id });
     } catch (err) {
       errback(err);
@@ -118,6 +135,9 @@ async function publish(e) {
   });
 
   transport.on('connectionstatechange', (state) => {
+    
+  console.log('transport.on("connectionstatechange"',state)
+    
     switch (state) {
       case 'connecting':
         $txtPublish.innerHTML = 'publishing...';
@@ -229,8 +249,11 @@ async function subscribe() {
 }
 
 async function consume(transport) {
+  console.log("consume",transport,device)
   const { rtpCapabilities } = device;
   const data = await socket.request('consume', { rtpCapabilities });
+  
+  console.log("socket.request('consume'",rtpCapabilities,data)
   const {
     producerId,
     id,
@@ -246,6 +269,7 @@ async function consume(transport) {
     rtpParameters,
     codecOptions,
   });
+  console.log("transport.consume",consumer)
   const stream = new MediaStream();
   stream.addTrack(consumer.track);
   return stream;
