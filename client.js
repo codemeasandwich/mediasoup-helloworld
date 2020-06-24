@@ -96,7 +96,7 @@ async function publish(e) {
     forceTcp: false,
     rtpCapabilities: device.rtpCapabilities,
   });
-  console.log('createProducerTransport',{
+  console.log('MediaSoup ProducerTransport',{
     forceTcp: false,
     rtpCapabilities: device.rtpCapabilities,
   },data)
@@ -135,9 +135,11 @@ async function publish(e) {
     }
   });
 
+  let stream;
+  
   transport.on('connectionstatechange', (state) => {
     
-  console.log('transport.on("connectionstatechange"',state)
+  console.log('publish : transport.on("connectionstatechange"',state)
     
     switch (state) {
       case 'connecting':
@@ -164,7 +166,6 @@ async function publish(e) {
     }
   });
 
-  let stream;
   try {
     stream = await getUserMedia(transport, isWebcam);
     const tracks = stream.getVideoTracks();
@@ -196,8 +197,8 @@ async function getUserMedia(transport, isWebcam) {
   let stream;
   try {
     stream = isWebcam ?
-      await navigator.mediaDevices.getUserMedia({ video: true }) :
-      await navigator.mediaDevices.getDisplayMedia({ video: true });
+      await navigator.mediaDevices.getUserMedia({ video: true, audio: true }) :   // Share Webcam
+      await navigator.mediaDevices.getDisplayMedia({ video: true }); // Share Screen
   } catch (err) {
     console.error('getUserMedia() failed:', err.message);
     throw err;
@@ -209,6 +210,7 @@ async function subscribe() {
   const data = await socket.request('createConsumerTransport', {
     forceTcp: false,
   });
+  console.log('MediaSoup ConsumerTransport',{},data)
   if (data.error) {
     console.error(data.error);
     return;
@@ -225,6 +227,9 @@ async function subscribe() {
   });
 
   transport.on('connectionstatechange', async (state) => {
+    
+  console.log('subscribe : transport.on("connectionstatechange"',state)
+  
     switch (state) {
       case 'connecting':
         $txtSubscription.innerHTML = 'subscribing...';
@@ -252,7 +257,7 @@ async function subscribe() {
 }
 
 async function consume(transport) {
-  console.log("consume",transport,device)
+  console.log("Make a media stream from this transport",transport,device)
   const { rtpCapabilities } = device;
   const data = await socket.request('consume', { rtpCapabilities });
   
@@ -272,8 +277,10 @@ async function consume(transport) {
     rtpParameters,
     codecOptions,
   });
+  
   console.log("transport.consume",consumer)
-  const stream = new MediaStream();
-  stream.addTrack(consumer.track);
+  
+   const stream = new MediaStream();
+         stream.addTrack(consumer.track);
   return stream;
 }

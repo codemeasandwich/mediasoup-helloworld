@@ -150,7 +150,7 @@ async function runSocketServer() {
     });
 
     socket.on('produce', async (data, callback) => {
-                                                                                scribbles.log('produce',data);
+                                                                                scribbles.log('Produce. PUSH my stream',data);
       const {kind, rtpParameters} = data;
       producer = await producerTransport.produce({ kind, rtpParameters });
       callback({ id: producer.id });
@@ -160,12 +160,12 @@ async function runSocketServer() {
     });
 
     socket.on('consume', async (data, callback) => {
-                                                                                scribbles.log('consume');
+                                                                                scribbles.log('Consume Producer stream',data);
       callback(await createConsumer(producer, data.rtpCapabilities));
     });
 
     socket.on('resume', async (data, callback) => {
-                                                                                scribbles.log('resume');
+                                                                                scribbles.log('resume',data);
       await consumer.resume();
       callback();
     });
